@@ -1,5 +1,6 @@
 #  coding: utf-8 
 import SocketServer
+import datetime
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -26,13 +27,50 @@ import SocketServer
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
-
 class MyWebServer(SocketServer.BaseRequestHandler):
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        self.request.sendall("OK")
+
+        httpCommand = ""
+        requestedPage =""
+        httpHeader ="HTTP/1.1 "
+        mimeType = ""
+
+        for char in self.data:
+
+            if char != "\n":
+                httpCommand+=char
+            else:
+                break
+
+        httpCommandSplit = httpCommand.split()
+        requestedPage = httpCommandSplit[1]
+        if(requestedPage =="/" or requestedPage == "/deep/"):
+            requestedPage ="/index.html"
+        if(requestedPage in ['/index.html','/base.css','/deep/deep.css','/deep/index.html']):
+            readFrom = "www"+requestedPage
+            fileToRead = open(readFrom, 'r')
+            contentToSend = fileToRead.read()
+            fileToRead.close()
+            mimeType = requestedPage.split('.')[1]
+            if(mimeType == "html"):
+                mimeType+="; charset=utf-8\n\n"
+            print "mimeType : " + mimeType 
+            httpHeader += """
+200 OK
+Server: Boyan's bad server
+Date:"""+str(datetime.datetime.now())+"""
+Content-length:"""+str(len(contentToSend))+"""
+Content-Type:text/""" + mimeType
+
+        else:
+            #should raise an error here(404)
+            httpHeader += "404 NOT FOUND"
+
+        self.request.sendall(httpHeader + """
+        """ + contentToSend)
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
