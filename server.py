@@ -67,10 +67,12 @@ Content-Type:text/""" + mimeType
 
         else:
             #should raise an error here(404)
-            httpHeader += "404 NOT FOUND"
+            contentToSend = """<html><h2> error: 404  page not found</h3></html>"""
+            httpHeader += """404 NOT FOUND
+Content-length:"""+str(len(contentToSend))+"""
+Content-Type:text/html"""
 
-        self.request.sendall(httpHeader + """
-        """ + contentToSend)
+        self.request.sendall(httpHeader + "\r\n\r\n" + contentToSend)
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
