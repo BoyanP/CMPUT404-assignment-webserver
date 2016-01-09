@@ -48,7 +48,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         httpCommandSplit = httpCommand.split()
         requestedPage = httpCommandSplit[1]
         if(requestedPage =="/" or requestedPage == "/deep/"):
-            requestedPage ="/index.html"
+            requestedPage +="index.html"
         if(requestedPage in ['/index.html','/base.css','/deep/deep.css','/deep/index.html']):
             readFrom = "www"+requestedPage
             fileToRead = open(readFrom, 'r')
@@ -56,23 +56,22 @@ class MyWebServer(SocketServer.BaseRequestHandler):
             fileToRead.close()
             mimeType = requestedPage.split('.')[1]
             if(mimeType == "html"):
-                mimeType+="; charset=utf-8\n\n"
-            print "mimeType : " + mimeType 
-            httpHeader += """
-200 OK
+                mimeType+="; charset=utf-8"
+            #print "mimeType : " + mimeType 
+            httpHeader += """200 OK
 Server: Boyan's bad server
 Date:"""+str(datetime.datetime.now())+"""
 Content-length:"""+str(len(contentToSend))+"""
-Content-Type:text/""" + mimeType
+Content-Type:text/""" + mimeType + " \r\n\r\n"
 
         else:
             #should raise an error here(404)
             contentToSend = """<html><h2> error: 404  page not found</h3></html>"""
-            httpHeader += """404 NOT FOUND
+            httpHeader = """HTTP/1.1 404 NOT FOUND
 Content-length:"""+str(len(contentToSend))+"""
-Content-Type:text/html"""
+Content-Type:text/html; charset=utf-8 \r\n\r\n"""
 
-        self.request.sendall(httpHeader + "\r\n\r\n" + contentToSend)
+        self.request.sendall(httpHeader  + contentToSend)
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
