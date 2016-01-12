@@ -32,7 +32,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-
+        noSlashFlag = "false" 
         httpCommand = ""
         requestedPage =""
         httpHeader ="HTTP/1.1 "
@@ -47,8 +47,12 @@ class MyWebServer(SocketServer.BaseRequestHandler):
 
         httpCommandSplit = httpCommand.split()
         requestedPage = httpCommandSplit[1]
+        
         if(requestedPage =="/" or requestedPage == "/deep/"):
             requestedPage +="index.html"
+        if(requestedPage=="/deep.css" and noSlashFlag == "true"):
+            requestedPage = "/deep/deep.cs"
+       
         if(requestedPage in ['/index.html','/base.css','/deep/deep.css','/deep/index.html']):
             readFrom = "www"+requestedPage
             fileToRead = open(readFrom, 'r')
@@ -66,8 +70,15 @@ Content-Type:text/""" + mimeType + " \r\n\r\n"
 
         else:
             #should raise an error here(404)
-            contentToSend = """<html><h2> error: 404  page not found</h3></html>"""
-            httpHeader = """HTTP/1.1 404 NOT FOUND
+            if (requestedPage == "/deep"):
+                contentToSend ="""<html> redirected to <a href=/deep/>here</a></html>"""
+                httpHeader = """HTTP/1.1 302 FOUND
+Location: /deep/
+Content-length: """ + str(len(contentToSend))+"""
+Content-type: text/html; charset=utf-8 \r\n\r\n"""
+            else:
+                contentToSend ="""<html><h2> error: 404  page not found</h3></html>"""
+                httpHeader = """HTTP/1.1 404 NOT FOUND
 Content-length:"""+str(len(contentToSend))+"""
 Content-Type:text/html; charset=utf-8 \r\n\r\n"""
 
