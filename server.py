@@ -69,8 +69,10 @@ Content-length:"""+str(len(contentToSend))+"""
 Content-Type:text/""" + mimeType + " \r\n\r\n"
 
         else:
-            #should raise an error here(404)
             if (requestedPage == "/deep"):
+                #need to redirect
+                #otherwise deep.css tries to get served from www/
+                #and not www/deep
                 contentToSend ="""<html> redirected to <a href=/deep/>here</a></html>"""
                 httpHeader = """HTTP/1.1 302 FOUND
 Location: /deep/
